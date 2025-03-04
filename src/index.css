@@ -1,0 +1,518 @@
+@import "tailwindcss";
+
+@theme {
+  --color-chat-background: #f5f5f5;
+  --color-sidebar: #efeeed;
+  --color-user-bubble: #e5e6e3;
+  --color-button-dark: #292726;
+}
+
+/* index.css or styles.css – custom rules from your <style> block */
+.collapsible-content {
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  padding-top: 12px; /* Keep default padding-top */
+  padding-bottom: 12px; /* Keep default padding-bottom */
+}
+.collapsed .collapsible-content {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+/* T logo styling */
+.t-logo {
+  font-weight: 900;
+  font-size: 1.25rem;
+}
+/* FORGE logo styling - similar to T logo */
+.forge-logo {
+  font-weight: 900;
+  font-size: 1rem;
+}
+/* Code editor styles */
+/* Update the code editor styles in your index.css file */
+.code-editor {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  line-height: 1.6;
+  tab-size: 2;
+  padding-left: 3rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  caret-color: #fff;
+}
+
+.code-editor::selection {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Resizable handle styles */
+.resize-handle-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  cursor: ew-resize;
+  transition: background-color 0.2s;
+}
+
+.resize-handle-left:hover,
+.resize-handle-left:active {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Preview iframe enhancements */
+#preview-tab-content iframe {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Line numbers */
+.line-numbers {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3rem;
+  background-color: #252526;
+  border-right: 1px solid #333;
+  color: #858585;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: right;
+  padding: 1rem 0.5rem;
+  user-select: none;
+}
+
+/* Code editor status bar */
+.editor-statusbar {
+  background-color: #007acc;
+  color: white;
+  padding: 2px 8px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-statusbar .item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Syntax highlighting */
+.token.comment { color: #6A9955; }
+.token.string { color: #CE9178; }
+.token.number { color: #B5CEA8; }
+.token.keyword { color: #569CD6; }
+.token.function { color: #DCDCAA; }
+.token.class-name { color: #4EC9B0; }
+.token.operator { color: #D4D4D4; }
+.token.punctuation { color: #d4d4d4; }
+/* Hide scrollbar but keep functionality */
+#chat-messages {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+#chat-messages::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+/* Improved sidebar transition */
+#sidebar {
+  transition: width 0.3s ease;
+}
+/* Right sidebar positioning */
+#properties-sidebar, #code-editor-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 50;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+#properties-sidebar.open, #code-editor-sidebar.open {
+  transform: translateX(0);
+}
+/* Main content transition when code editor is open */
+main {
+  transition: padding-right 0.3s ease, width 0.3s ease;
+}
+
+main.code-editor-open {
+  padding-right: 24rem; /* 384px (w-96) */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  main.code-editor-open {
+    padding-right: 20rem;
+  }
+  
+  #code-editor-sidebar {
+    width: 20rem;
+  }
+}
+
+@media (max-width: 768px) {
+  main.code-editor-open {
+    padding-right: 0;
+    width: calc(100% - 16rem);
+  }
+  
+  #code-editor-sidebar {
+    width: 16rem;
+  }
+  
+  main.sm-screen.code-editor-open {
+    transform: translateX(-16rem);
+  }
+  
+  .chat-container {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  #sidebar {
+    width: 3rem !important;
+  }
+  
+  main.code-editor-open {
+    width: calc(100% - 12rem);
+  }
+  
+  #code-editor-sidebar {
+    width: 12rem;
+  }
+  
+  main.sm-screen.code-editor-open {
+    transform: translateX(-12rem);
+  }
+}
+/* Improved button styles */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.action-btn:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+/* Responsive chat container */
+.chat-container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+/* Message action buttons */
+.message-actions {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.llm-response:hover .message-actions,
+.user-message:hover .message-actions {
+  opacity: 1;
+}
+/* Model mention styles */
+.model-mention {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(79, 70, 229, 0.1);
+  border-radius: 4px;
+  padding: 0.125rem 0.375rem;
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+.model-mention ion-icon {
+  margin-right: 0.25rem;
+  font-size: 1.1em;
+}
+
+/* Style preview animations */
+.style-option {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.style-option:hover {
+  transform: translateY(-4px);
+}
+
+.style-option::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.style-option:hover::after {
+  opacity: 1;
+}
+
+/* Blur effects for depth */
+.style-option .bg-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Glassmorphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+/* LLM response artifacts */
+.llm-artifact {
+  border: 1px solid #e5e6e3;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.llm-artifact-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+}
+/* Project and Chat Management Styles */
+.project-item {
+  position: relative;
+}
+
+.project-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 50;
+  min-width: 160px;
+}
+
+.drag-over {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 0.375rem;
+}
+
+.chat-item {
+  transition: all 0.2s ease;
+}
+
+.chat-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.project-header {
+  transition: background-color 0.2s ease;
+}
+
+.project-header:hover .project-actions {
+  opacity: 1;
+}
+
+.project-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Improved scrollbar styles for project list */
+.project-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.project-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.project-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.project-list::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Animation for expanding/collapsing projects */
+.project-content {
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.project-content.collapsed {
+  max-height: 0;
+}
+/* Add these styles for the code editor */
+.code-editor-open {
+  margin-right: var(--editor-width, 500px);
+  transition: margin-right 0.3s ease;
+}
+
+/* Prevent text selection during resize */
+.resize-handle {
+  user-select: none;
+}
+
+/* Syntax highlighting improvements */
+.syntax-highlighter {
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* Improve scrollbars for code editor */
+.code-editor-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.code-editor-content::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.code-editor-content::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.code-editor-content::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+.artifact-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 8px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 250px;
+}
+
+.artifact-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #edf2f7;
+}
+
+.artifact-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #4a5568;
+}
+
+.artifact-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #2d3748;
+}
+
+.artifact-action {
+  font-size: 12px;
+  color: #718096;
+}
+/* Add these styles after your existing artifact styles around line 443 */
+.code-artifact {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.code-artifact .hidden {
+  display: none;
+}
+
+.code-artifact:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.code-artifact-preview {
+  max-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.code-artifact-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(transparent, rgba(249, 250, 251, 0.9));
+  pointer-events: none;
+}
+/* Add this to the end of your CSS file */
+.streaming-message {
+  position: relative;
+}
+
+.streaming-message::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #4f46e5, transparent);
+  animation: streaming-pulse 1.5s infinite;
+}
+
+@keyframes streaming-pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+/* ... existing styles ... */
+
+/* Forge Panel styles */
+.forge-terminal {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.forge-terminal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.forge-terminal::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.forge-terminal::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.forge-terminal::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
