@@ -1,9 +1,9 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/sidebar/Sidebar';
 import CodeEditorSidebar from './components/CodeEditorSidebar';
-import MainChatArea from './components/MainChatArea';
-import SettingsModal from './components/SettingsModal';
+import MainChatArea from './components/chat/MainChatArea';
+import SettingsModal from './components/settings/SettingsModal';
 
 import useMobile from './hooks/useMobile';
 import useChatManager from './hooks/useChatManager';
