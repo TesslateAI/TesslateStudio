@@ -35,7 +35,14 @@ const Toolbar = ({
               <ion-icon name="search-outline" className="text-lg"></ion-icon>
             </button>
             <button 
-              className="hover:text-gray-800 p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 ml-2" 
+              className="hover:text-gray-800 p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 ml-2"
+              aria-label="Deep Research"
+              onClick={() => window.sendMessage("@deep-research")}
+            >
+              <ion-icon name="library-outline" className="text-lg"></ion-icon>
+            </button>
+            <button 
+              className="hover:text-gray-800 p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 ml-2"
               aria-label="Improve prompt"
             >
               <ion-icon name="flash-outline" className="text-lg"></ion-icon>
@@ -85,6 +92,15 @@ const Toolbar = ({
             >
               <ion-icon name="search-outline" className="text-lg"></ion-icon>
               <span className="text-sm font-medium">Prompt Library</span>
+            </button>
+            <div className="text-gray-300 mx-2">|</div>
+            <button 
+              className="hover:text-gray-800 p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 flex items-center gap-1.5"
+              aria-label="Deep"
+              onClick={() => window.sendMessage("@deep-research")}
+            >
+              <ion-icon name="library-outline" className="text-lg"></ion-icon>
+              <span className="text-sm font-medium">Deep</span>
             </button>
             <div className="text-gray-300 mx-2">|</div>
             <button 
