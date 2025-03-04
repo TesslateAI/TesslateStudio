@@ -12,6 +12,12 @@ const ChatInput = ({
   selectedSuggestionIndex,
   onSuggestionClick
 }) => {
+  const handleSend = () => {
+    const modelMatch = messageInput.match(/@(\w+)/);
+    const modelName = modelMatch ? modelMatch[1] : null;
+    handleSendMessage(messageInput, modelName);
+  };
+
   return (
     <div className="chat-container relative">
       <div className="bg-white rounded-xl shadow-lg">
@@ -66,7 +72,7 @@ const ChatInput = ({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
                     e.preventDefault();
-                    handleSendMessage();
+                    handleSend();
                   }
                   onKeyDown?.(e);
                 }}
@@ -74,7 +80,7 @@ const ChatInput = ({
               />
             </div>
             <button
-              onClick={handleSendMessage}
+              onClick={handleSend}
               id="send-message"
               className="bg-button-dark text-white p-2.5 rounded-full ml-2 hover:bg-gray-800 
                 focus:outline-none focus:ring-2 focus:ring-gray-400 flex items-center justify-center

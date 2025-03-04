@@ -1,7 +1,7 @@
 // ChatMessages.jsx
 import React from 'react';
 import UserMessage from './UserMessage';
-import LLMMessage from './LLMMessage';
+import LLMMessage from '../LLMMessage';
 
 const ChatMessages = ({
   chatMessages,

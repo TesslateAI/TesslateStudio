@@ -4,45 +4,43 @@ import { DEFAULT_MODEL } from '../../utils/openaiClient';
 
 export class MockModelService implements ModelService {
   private llmModels: LLMModel[] = [
-    { id: 'uigen-t1', name: 'UIGEN-T1', icon: 'flash-outline', isOpenAI: true },
-    { id: 'react', name: 'react', icon: 'logo-react' },
-    { id: 'claude', name: 'Claude', icon: 'bulb-outline' },
-    { id: 'llama', name: 'Llama', icon: 'paw-outline' },
-    { id: 'mistral', name: 'Mistral', icon: 'cloud-outline' },
-    { id: 'gemini', name: 'Gemini', icon: 'sparkles-outline' },
-    { id: 'style', name: 'Style', icon: 'color-palette-outline' },
-    { id: 'html', name: 'HTML', icon: 'code-slash-outline' }
+    { id: 'uigen-t1', name: 'UIGEN-T1', icon: 'flash-outline', provider: 'openai', type: 'openai' },
+    { id: 'react', name: 'React', icon: 'logo-react', provider: 'mock', type: 'mock' },
+    { id: 'claude', name: 'Claude', icon: 'bulb-outline', provider: 'mock', type: 'mock' },
+    { id: 'llama', name: 'Llama', icon: 'paw-outline', provider: 'mock', type: 'mock' },
+    { id: 'mistral', name: 'Mistral', icon: 'cloud-outline', provider: 'mock', type: 'mock' },
+    { id: 'gemini', name: 'Gemini', icon: 'sparkles-outline', provider: 'mock', type: 'mock' },
+    { id: 'style', name: 'Style', icon: 'color-palette-outline', provider: 'mock', type: 'mock' },
+    { id: 'html', name: 'HTML', icon: 'code-slash-outline', provider: 'mock', type: 'mock' }
   ];
 
   getAvailableModels(): LLMModel[] {
-    // Add the default OpenAI model to the list
     const defaultModel = {
       id: DEFAULT_MODEL.replace('smirki/', ''),
       name: DEFAULT_MODEL.split('/')[1],
       icon: 'flash-outline',
-      isOpenAI: true
+      provider: 'openai',
+      type: 'openai'
     };
     
-    // Check if we already have this model in the list
     const modelExists = this.llmModels.some(model => model.id === defaultModel.id);
     
     if (!modelExists) {
-      // Add the default model to the beginning of the list
       return [defaultModel, ...this.llmModels];
     }
     
     return this.llmModels;
   }
 
-  async generateResponse(message: string, model?: LLMModel): Promise<string> {
+  async generateResponse(message: string, model: LLMModel): Promise<string> {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000));
   
-    if (!model) {
-      return `<p>This is a default response. Try mentioning a specific model using @modelname.</p>`;
+    if (!model || model.provider !== 'mock') {
+      return `<p>This is a default response. Try mentioning a specific mock model using @modelname.</p>`;
     }
   
-    switch (model.id) {
+    switch (model.id.toLowerCase()) {
       case 'style':
         return `<div class="style-response">
           <h3>UI Style Selection</h3>
@@ -175,36 +173,20 @@ export const DashboardCard = () => {
             <div class="hidden">const MyComponent = () => {
     return <div>Hello React!</div>;
   }</div>
-          <div class="bg-gray-100 p-4 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors" onclick="window.openInCodeEditor(this.previousElementSibling.textContent)">
-            <div class="flex items-center gap-2">
-              <ion-icon name="code-slash-outline" class="text-gray-600"></ion-icon>
-              <span class="font-medium">Click to view React component</span>
-            </div>
-          </div>
-        </div>
-      </div>`;
-  
-      case 'claude':
-        return `<div class="claude-response">
-          <h3>Claude's Analysis</h3>
-          <p class="mt-2">Here's a detailed explanation of your query...</p>
-        </div>`;
-  
-      default:
-        // For the default model, wrap any code blocks in the sandboxed container
-        const processedMessage = message.replace(/```([a-z]*)([\s\S]*?)```/g, (match, language, code) => {
-          return `<div class="code-artifact rounded-lg border border-gray-200 p-4 bg-gray-50 my-4">
-            <div class="hidden">${code.trim()}</div>
             <div class="bg-gray-100 p-4 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors" onclick="window.openInCodeEditor(this.previousElementSibling.textContent)">
               <div class="flex items-center gap-2">
                 <ion-icon name="code-slash-outline" class="text-gray-600"></ion-icon>
-                <span class="font-medium">Click to view ${language || 'code'}</span>
+                <span class="font-medium">Click to view React component</span>
               </div>
             </div>
-          </div>`;
-        });
-        
-        return `<p>Response from ${model.name}: "${processedMessage}"</p>`;
+          </div>
+        </div>`;
+  
+      default:
+        return `<div class="mock-response">
+          <h3>${model.name} Response</h3>
+          <p>Mock response from ${model.name} model for message: "${message}"</p>
+        </div>`;
     }
   }
 }

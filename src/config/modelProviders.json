@@ -1,0 +1,50 @@
+{
+  "providers": [
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "type": "openai",
+      "baseURL": "https://api.featherless.ai/v1",
+      "apiKeyEnvVar": "VITE_API_KEY",
+      "models": [
+        {
+          "id": "smirki/UIGEN-T1.1-Qwen-7B",
+          "name": "UIGEN-T1",
+          "icon": "flash-outline"
+        }
+      ]
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama",
+      "type": "ollama",
+      "baseURL": "http://localhost:11434/api",
+      "models": [
+        {
+          "id": "phi4",
+          "name": "Phi-4",
+          "icon": "brain-outline"
+        }
+      ]
+    },
+    {
+      "id": "mock",
+      "name": "Mock Models",
+      "type": "mock",
+      "models": [
+        {
+          "id": "react",
+          "name": "React",
+          "icon": "logo-react"
+        },
+        {
+          "id": "style",
+          "name": "Style",
+          "icon": "color-palette-outline"
+        }
+      ]
+    }
+  ],
+  "defaultProvider": "ollama",
+  "defaultModel": "phi4"
+}

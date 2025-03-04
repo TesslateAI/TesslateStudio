@@ -1,12 +1,12 @@
 // MainChatArea.jsx
 import React, { useState } from 'react';
-import ChatMessages from './ChatMessages';
+import ChatMessages from './ChatMessages'; // Assuming ChatMessages.jsx is in the same directory
 import ChatInput from './ChatInput';
 import Toolbar from './Toolbar';
 import GitHubModal from './GitHubModal';
 import PromptLibrary from './PromptLibrary';
-import ForgePanel from './ForgePanel';
-import { openai, DEFAULT_MODEL } from '../../utils/openaiClient';
+import ForgePanel from '../forgeppanel/ForgePanel';
+import { modelProviderService, DEFAULT_MODEL } from '../../utils/openaiClient';
 
 function MainChatArea({
   className,
@@ -22,7 +22,7 @@ function MainChatArea({
   selectedSuggestionIndex,
   onSuggestionClick,
   onEditMessage,
-  onToggleCollapse,
+  onToggleCollapse, // Make sure this prop is passed to MainChatArea
   onToggleProperties,
   onToggleCodeEditor,
   onRegenerateMessage,
@@ -39,19 +39,23 @@ function MainChatArea({
     onInputChange({ target: { value: promptText } });
     setShowPromptLibrary(false);
   };
-
   // Handle sending a message using a model called with the @ syntax, defaulting if not provided
   const handleSendMessage = async () => {
     const modelMatch = messageInput.match(/@(\S+)/);
-    const model = modelMatch ? modelMatch[1] : DEFAULT_MODEL;
-    
+    let modelName = modelMatch ? modelMatch[1].toLowerCase() : DEFAULT_MODEL;
+
+    // Get the actual model info from the service
+    const modelInfo = modelMatch ?
+      modelProviderService.getModelByName(modelName) :
+      modelProviderService.getDefaultModel();
+
     if (typeof onSendMessage === 'function') {
-      onSendMessage(model);
+      // Pass the full model info instead of just the ID
+      onSendMessage(modelInfo);
     }
   };
-
   return (
-    <main 
+    <main
       className={`flex-1 flex flex-col relative overflow-hidden transition-all duration-300 ${className}`}
       style={style}
     >
@@ -64,7 +68,7 @@ function MainChatArea({
           <ion-icon name="menu-outline"></ion-icon>
         </button>
       )}
-      
+
       <button
         onClick={onToggleCodeEditor}
         className="absolute top-4 right-4 z-10 bg-transparent hover:bg-gray-100/50 text-gray-600 p-2 rounded-lg flex items-center gap-1 backdrop-blur-sm transition-all duration-200"
@@ -73,17 +77,17 @@ function MainChatArea({
         <ion-icon name="code-slash-outline"></ion-icon>
       </button>
 
-      <ChatMessages 
+      <ChatMessages
         chatMessages={chatMessages}
         isLLMThinking={isLLMThinking}
-        onToggleCollapse={onToggleCollapse}
+        onToggleCollapse={onToggleCollapse} // Pass onToggleCollapse prop here
         onEditMessage={onEditMessage}
         onRegenerateMessage={onRegenerateMessage}
       />
 
       <div className="p-4 chat-container relative">
         <div className="bg-white rounded-xl shadow-lg">
-          <ChatInput 
+          <ChatInput
             isMobile={isMobile}
             messageInput={messageInput}
             onInputChange={onInputChange}
@@ -94,7 +98,7 @@ function MainChatArea({
             selectedSuggestionIndex={selectedSuggestionIndex}
             onSuggestionClick={onSuggestionClick}
           />
-          <Toolbar 
+          <Toolbar
             isMobile={isMobile}
             setShowPromptLibrary={setShowPromptLibrary}
             setShowGitHubModal={setShowGitHubModal}
@@ -102,7 +106,7 @@ function MainChatArea({
           />
         </div>
       </div>
-      <GitHubModal 
+      <GitHubModal
         showGitHubModal={showGitHubModal}
         setShowGitHubModal={setShowGitHubModal}
         githubRepo={githubRepo}

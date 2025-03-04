@@ -1,262 +1,126 @@
-// src/hooks/useLLM.js
 import { useState } from 'react';
-import { openai, DEFAULT_MODEL, isModelAvailable } from '../utils/openaiClient';
-import { MockModelService } from '../services/models/mockModelService';
+import { modelProviderService } from '../utils/openaiClient';
 
-const DEFAULT_MODEL_INFO = {
-  id: DEFAULT_MODEL,
-  name: DEFAULT_MODEL.split('/').pop() || DEFAULT_MODEL,
-  icon: 'flash-outline',
-  isOpenAI: true
-};
-
-function useLLM(chats, setChats, activeChat, llmModels) {
+function useLLM(chats, setChats, activeChat) {
   const [isLLMThinking, setIsLLMThinking] = useState(false);
-  const modelService = new MockModelService();
 
-  const formatMessageContent = (content) => {
-    const modelRegex = /@(\w+)/g;
-    return content.replace(modelRegex, (match, modelName) => {
-      const model = llmModels.find(m => m.name.toLowerCase() === modelName.toLowerCase());
-      if (model) {
-        return `<span class="model-mention"><ion-icon name="${model.icon}"></ion-icon>${model.name}</span>`;
-      }
-      return match;
-    });
-  };
-
-  const sendMessage = async (messageInput) => {
+  const sendMessage = async (messageInput, modelName) => {
     if (messageInput.trim() === "") return;
-    const formattedContent = formatMessageContent(messageInput);
 
-    const modelMatch = messageInput.match(/@(\w+)/);
-    const modelName = modelMatch ? modelMatch[1].toLowerCase() : DEFAULT_MODEL;
-    const requestedModel = llmModels.find(m => m.name.toLowerCase() === modelName) || DEFAULT_MODEL_INFO;
+    // Get model info from service
+    const modelInfo = modelName ? 
+      modelProviderService.getModelByName(modelName) : 
+      modelProviderService.getDefaultModel();
 
+    if (!modelInfo) {
+      throw new Error(`Model ${modelName} not found`);
+    }
+
+    // Create messages
     const userMsg = {
       id: Date.now(),
       type: 'user',
-      content: formattedContent,
-      rawContent: messageInput,
-      model: requestedModel
+      content: messageInput,
+      model: modelInfo
     };
 
-    // Append user message
-    setChats(prevChats => prevChats.map(chat =>
-      chat.id === activeChat
-        ? { ...chat, messages: [...chat.messages, userMsg] }
-        : chat
-    ));
-
-    // Create temporary LLM message
     const llmMsgId = Date.now() + 1;
-    const tempLLMMsg = {
-      id: llmMsgId,
-      type: 'llm',
-      content: '',
-      isCollapsed: false,
-      model: requestedModel,
-      streaming: true
-    };
-
+    
+    // Update chat with user message and temporary LLM message
     setChats(prevChats => prevChats.map(chat =>
       chat.id === activeChat
-        ? { ...chat, messages: [...chat.messages, tempLLMMsg] }
+        ? {
+            ...chat,
+            messages: [...chat.messages, userMsg, {
+              id: llmMsgId,
+              type: 'llm',
+              content: '',
+              model: modelInfo,
+              streaming: true
+            }]
+          }
         : chat
     ));
 
     setIsLLMThinking(true);
     try {
-      const isDefaultModel = requestedModel.id === DEFAULT_MODEL || requestedModel.id === DEFAULT_MODEL.split('/').pop();
-      if (isDefaultModel) {
-        const modelAvailable = await isModelAvailable(requestedModel.id);
-        if (!modelAvailable) {
-          throw new Error(`Model ${requestedModel.id} is not available`);
-        }
-
-        const messages = [{ role: 'system', content: 'You are a helpful assistant.' }];
-        const activeChatObj = chats.find(chat => chat.id === activeChat);
-        if (activeChatObj) {
-          activeChatObj.messages.forEach(msg => {
-            if (msg.type === 'user') {
-              messages.push({ role: 'user', content: msg.rawContent || msg.content });
-            } else if (msg.type === 'llm') {
-              messages.push({ role: 'assistant', content: msg.content });
-            }
+      const messages = [{ role: 'system', content: 'You are a helpful assistant.' }];
+      const chat = chats.find(c => c.id === activeChat);
+      
+      if (chat) {
+        chat.messages.forEach(msg => {
+          messages.push({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
           });
-        }
-        messages.push({ role: 'user', content: userMsg.rawContent });
-
-        const stream = await openai.chat.completions.create({
-          model: requestedModel,
-          messages,
-          stream: true,
         });
+      }
+      messages.push({ role: 'user', content: messageInput });
 
+      const stream = await modelProviderService.generateResponse(modelInfo, messages);
+
+      if (modelInfo.type === 'ollama') {
+        const reader = stream.getReader();
+        let fullContent = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const text = new TextDecoder().decode(value);
+            const lines = text.split('\n').filter(line => line.trim());
+
+            for (const line of lines) {
+              try {
+                const data = JSON.parse(line);
+                if (data.response) {
+                  fullContent += data.response;
+                  updateChat(llmMsgId, fullContent);
+                }
+              } catch (e) {
+                console.error('Error parsing Ollama response:', e);
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      } else if (modelInfo.type === 'openai') {
         let fullContent = '';
         for await (const chunk of stream) {
           const content = chunk.choices[0]?.delta?.content || '';
           fullContent += content;
-          setChats(prevChats => prevChats.map(chat =>
-            chat.id === activeChat
-              ? {
-                  ...chat,
-                  messages: chat.messages.map(msg =>
-                    msg.id === llmMsgId ? { ...msg, content: fullContent } : msg
-                  )
-                }
-              : chat
-          ));
+          updateChat(llmMsgId, fullContent);
         }
       } else {
-        const llmResponseText = await modelService.generateResponse(
-          userMsg.rawContent || userMsg.content,
-          requestedModel
-        );
-        setChats(prevChats => prevChats.map(chat =>
-          chat.id === activeChat
-            ? {
-                ...chat,
-                messages: chat.messages.map(msg =>
-                  msg.id === llmMsgId ? { ...msg, content: llmResponseText, streaming: false } : msg
-                )
-              }
-            : chat
-        ));
+        // Mock or other providers
+        updateChat(llmMsgId, stream, false);
       }
     } catch (error) {
       console.error('Error generating response:', error);
-      setChats(prevChats => prevChats.map(chat =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              messages: chat.messages.map(msg =>
-                msg.id === llmMsgId
-                  ? { ...msg, content: `Error: ${error.message || 'Failed to generate response'}`, streaming: false }
-                  : msg
-              )
-            }
-          : chat
-      ));
+      updateChat(llmMsgId, `Error: ${error.message}`, false);
     } finally {
       setIsLLMThinking(false);
     }
   };
-
-  const regenerateMessage = async (messageId) => {
-    const activeChatObj = chats.find(chat => chat.id === activeChat);
-    if (!activeChatObj) return;
-
-    const messageIndex = activeChatObj.messages.findIndex(msg => msg.id === messageId);
-    if (messageIndex === -1 || activeChatObj.messages[messageIndex].type !== 'llm') return;
-
-    let userMessageIndex = messageIndex - 1;
-    while (userMessageIndex >= 0) {
-      if (activeChatObj.messages[userMessageIndex].type === 'user') break;
-      userMessageIndex--;
-    }
-    if (userMessageIndex < 0) return;
-    const userMessage = activeChatObj.messages[userMessageIndex];
-
-    const newLlmMsgId = Date.now();
-    setChats(prevChats => prevChats.map(chat => {
-      if (chat.id === activeChat) {
-        const updatedMessages = [...chat.messages];
-        updatedMessages.splice(messageIndex, 1, {
-          id: newLlmMsgId,
-          type: 'llm',
-          content: '',
-          isCollapsed: false,
-          model: userMessage.model || DEFAULT_MODEL_INFO,
-          streaming: true
-        });
-        return { ...chat, messages: updatedMessages };
-      }
-      return chat;
-    }));
-
-    setIsLLMThinking(true);
-    try {
-      const modelId = userMessage.model?.id || DEFAULT_MODEL;
-      const isDefaultModel = modelId === DEFAULT_MODEL || modelId === DEFAULT_MODEL.split('/').pop();
-      if (isDefaultModel) {
-        const messages = [{ role: 'system', content: 'You are a helpful assistant.' }];
-        for (let i = 0; i < userMessageIndex; i++) {
-          const msg = activeChatObj.messages[i];
-          if (msg.type === 'user') {
-            messages.push({ role: 'user', content: msg.rawContent || msg.content });
-          } else if (msg.type === 'llm') {
-            messages.push({ role: 'assistant', content: msg.content });
+  // Update this function
+  const updateChat = (messageId, content, streaming = true) => {
+    // For mock and OpenAI responses that come as complete strings
+    const isCompleteResponse = typeof content === 'string' && !streaming;
+    
+    setChats(prevChats => prevChats.map(chat =>
+      chat.id === activeChat
+        ? {
+            ...chat,
+            messages: chat.messages.map(msg =>
+              msg.id === messageId ? { ...msg, content, streaming: !isCompleteResponse } : msg
+            )
           }
-        }
-        messages.push({ role: 'user', content: userMessage.rawContent || userMessage.content });
-        const stream = await openai.chat.completions.create({
-          model: DEFAULT_MODEL,
-          messages,
-          max_tokens: 4096,
-          stream: true,
-        });
-        let fullContent = '';
-        for await (const chunk of stream) {
-          const content = chunk.choices[0]?.delta?.content || '';
-          fullContent += content;
-          setChats(prevChats => prevChats.map(chat =>
-            chat.id === activeChat
-              ? {
-                  ...chat,
-                  messages: chat.messages.map(msg =>
-                    msg.id === newLlmMsgId ? { ...msg, content: fullContent } : msg
-                  )
-                }
-              : chat
-          ));
-        }
-        setChats(prevChats => prevChats.map(chat =>
-          chat.id === activeChat
-            ? {
-                ...chat,
-                messages: chat.messages.map(msg =>
-                  msg.id === newLlmMsgId ? { ...msg, content: fullContent, streaming: false } : msg
-                )
-              }
-            : chat
-        ));
-      } else {
-        const llmResponseText = await modelService.generateResponse(
-          userMessage.rawContent || userMessage.content,
-          userMessage.model
-        );
-        setChats(prevChats => prevChats.map(chat =>
-          chat.id === activeChat
-            ? {
-                ...chat,
-                messages: chat.messages.map(msg =>
-                  msg.id === newLlmMsgId ? { ...msg, content: llmResponseText, streaming: false } : msg
-                )
-              }
-            : chat
-        ));
-      }
-    } catch (error) {
-      console.error('Error regenerating response:', error);
-      setChats(prevChats => prevChats.map(chat =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              messages: chat.messages.map(msg =>
-                msg.id === newLlmMsgId
-                  ? { ...msg, content: `Error: ${error.message || 'Failed to generate response'}`, streaming: false }
-                  : msg
-              )
-            }
-          : chat
-      ));
-    } finally {
-      setIsLLMThinking(false);
-    }
+        : chat
+    ));
   };
-
-  return { isLLMThinking, sendMessage, regenerateMessage };
+  return { isLLMThinking, sendMessage };
 }
 
 export default useLLM;

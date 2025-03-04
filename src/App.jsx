@@ -9,16 +9,8 @@ import useMobile from './hooks/useMobile';
 import useChatManager from './hooks/useChatManager';
 import useAutocomplete from './hooks/useAutocomplete';
 import useLLM from './hooks/useLLM';
+import { modelProviderService } from './utils/openaiClient';
 
-import { DEFAULT_MODEL } from './utils/openaiClient';
-import { MockModelService } from './services/models/mockModelService';
-
-const DEFAULT_MODEL_INFO = {
-  id: DEFAULT_MODEL,
-  name: DEFAULT_MODEL.split('/').pop() || DEFAULT_MODEL,
-  icon: 'flash-outline',
-  isOpenAI: true
-};
 
 const commonPhrases = [
   'Can you explain',
@@ -56,10 +48,9 @@ function App() {
   const [codeEditorWidth, setCodeEditorWidth] = useState('30%');
   const [messageInput, setMessageInput] = useState("");
   const [showSettings, setShowSettings] = useState(false);
-
-  // Initialize model service and get available models
-  const modelServiceInstance = new MockModelService();
-  const llmModels = modelServiceInstance.getAvailableModels();
+  
+  // Replace with this
+  const llmModels = modelProviderService.getAllModels();
 
   // Autocomplete hook
   const {
