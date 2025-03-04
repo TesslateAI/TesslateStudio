@@ -2,6 +2,9 @@
 
 Tesslate Studio is an intelligent development environment that combines AI-powered assistance with a modern code editor. It features real-time chat interactions with various AI models, code generation, and project management capabilities.
 
+![image](https://github.com/user-attachments/assets/7c811991-9092-4285-9f36-159fe74dec76)
+
+
 ## Features
 
 - 🤖 Multiple AI Model Support
