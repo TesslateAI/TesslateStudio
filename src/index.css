@@ -472,7 +472,8 @@ main.code-editor-open {
   pointer-events: none;
 }
 /* Add this to the end of your CSS file */
-.streaming-message {
+/* Remove these styles */
+/* .streaming-message {
   position: relative;
 }
 
@@ -491,9 +492,7 @@ main.code-editor-open {
   0% { opacity: 0.3; }
   50% { opacity: 1; }
   100% { opacity: 0.3; }
-}
-
-/* ... existing styles ... */
+} */
 
 /* Forge Panel styles */
 .forge-terminal {

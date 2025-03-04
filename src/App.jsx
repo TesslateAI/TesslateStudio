@@ -1,4 +1,9 @@
 // src/App.jsx
+/**
+ * Root application component that manages the overall layout and state of Tesslate Studio.
+ * Handles the main application structure including chat interface, code editor sidebar,
+ * and project management. Coordinates between different components and manages global state.
+ */
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/sidebar/Sidebar';
 import CodeEditorSidebar from './components/CodeEditorSidebar';
@@ -21,6 +26,11 @@ const commonPhrases = [
   'Translate this to'
 ];
 
+/**
+ * Root application component that manages the overall layout and state of Tesslate Studio.
+ * Handles the main application structure including chat interface, code editor sidebar,
+ * and project management. Coordinates between different components and manages global state.
+ */
 function App() {
   // Mobile-related state via custom hook
   const { isMobile, sidebarCollapsed, setSidebarCollapsed, showMobileSidebar, setShowMobileSidebar } = useMobile();
@@ -94,6 +104,7 @@ function App() {
       setShowMobileSidebar(false);
     }
   };
+  
 
   const handleSettingsToggle = () => setShowSettings(prev => !prev);
   const handleCodeEditorWidthChange = (width) => setCodeEditorWidth(width);

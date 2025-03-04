@@ -1,3 +1,10 @@
+/**
+ * Custom hook that manages LLM (Language Learning Model) interactions.
+ * Handles message sending, streaming responses, and chat state updates.
+ * Supports multiple model providers (OpenAI, Ollama) with different streaming implementations.
+ * Core functionality for AI message generation and chat management.
+ */
+
 import { useState } from 'react';
 import { modelProviderService } from '../utils/openaiClient';
 

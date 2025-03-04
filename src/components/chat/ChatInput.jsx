@@ -1,4 +1,10 @@
 // ChatInput.jsx
+/**
+ * Chat input component that handles user message input and model selection.
+ * Features autocomplete suggestions for models and common phrases.
+ * Supports both mobile and desktop layouts with different input behaviors.
+ * Located in the main chat interface at the bottom of the chat area.
+ */
 import React from 'react';
 
 const ChatInput = ({

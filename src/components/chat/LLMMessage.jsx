@@ -135,8 +135,8 @@ function LLMMessage({ message, onToggleCollapse, onEditMessage, onRegenerate }) 
     const streamingClass = message.streaming ? "animate-pulse" : "";
     
     return (
-      <div className={`llm-response w-full ${streamingClass}`}>
-        <div className="border border-[#e5e6e3] rounded-lg bg-transparent shadow-sm">
+      <div className="llm-response w-full">
+        <div className={`border border-[#e5e6e3] rounded-lg bg-transparent shadow-sm ${message.collapsed ? 'collapsed' : ''}`}>
           <div className="flex justify-between items-center p-2">
             <div className="flex items-center gap-2">
               <div className="t-logo text-gray-700">T</div>

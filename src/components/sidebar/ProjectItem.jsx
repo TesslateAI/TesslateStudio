@@ -1,3 +1,10 @@
+/**
+ * Project item component used in the sidebar for project management.
+ * Handles project folder expansion/collapse, chat organization, and drag-and-drop functionality.
+ * Manages project renaming, deletion, and chat creation within projects.
+ * Part of the sidebar navigation system.
+ */
+
 import React, { useState, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import DraggableChatItem from './DraggableChatItem';

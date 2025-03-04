@@ -28,7 +28,7 @@ const ChatMessages = ({
       {isLLMThinking && (
         <div className="flex justify-start">
           <div className="flex items-center gap-2 border border-[#e5e6e3] rounded-lg p-2 bg-transparent">
-            <div className="animate-pulse">
+            <div>
               <ion-icon name="hourglass-outline" className="w-5 h-5"></ion-icon>
             </div>
             <span>Thinking...</span>
