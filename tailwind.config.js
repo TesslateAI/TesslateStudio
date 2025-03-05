@@ -8,10 +8,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'chat-background': '#f5f5f5',
-        'sidebar': '#efefed',
-        'user-bubble': '#e5e6e3',
-        'button-dark': '#292726',
+        'chat-background': '#f5f1ee',
+        'sidebar': '#e8e0d8',
+        'user-bubble': '#dcd3cb',
+        'button-dark': '#4a3c31',
       },
     },
   },
